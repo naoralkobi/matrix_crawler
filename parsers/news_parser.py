@@ -47,12 +47,13 @@ class NewsParser(Parser):
         try:
             page_source = self._get_page_source(url, "Results")
             urls = self._get_articles_urls(page_source)
+            logger.info(f"found {len(urls)} to crawl")
             for url in urls:
                 page_source = self._get_page_source(url, "contentPageHeadTitle")
                 article = self.parse_response(url, page_source)
                 json_data.append(article)
         except Exception as e:
-            print(f"Error fetching data from {url}: {e}")
+            logger.critical(f"Error fetching data from {url}: {e}")
 
         finally:
             # Close the browser

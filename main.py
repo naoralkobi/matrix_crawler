@@ -44,6 +44,13 @@ def get_args():
 
 
 if __name__ == "__main__":
+    """
+    --url "https://www.gov.il/en/collectors/news" --parser "news"
+    --url "https://www.paneco.co.il/whiskey" --parser "whiskey"
+    --------------------------
+    --search "" --url "https://www.gov.il/en/collectors/news" --parser "news"
+    --search "מילק" --url "https://www.paneco.co.il/whiskey" --parser "whiskey"
+    """
     arguments = get_args()
     try:
         if arguments.search:

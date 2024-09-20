@@ -20,7 +20,7 @@ class JSONStorage(Storage):
 
         try:
             if file_path.exists():
-                all_data = json.loads(file_path.read_text())
+                all_data = json.loads(file_path.read_text(encoding='utf-8'))
                 logging.info(f"Loaded existing data from {file_path} with {len(all_data)} entries.")
             else:
                 all_data = []
@@ -34,7 +34,7 @@ class JSONStorage(Storage):
             if new_entries:
                 logging.info(f"Adding {len(new_entries)} new entries to {file_path}.")
                 all_data.extend(new_entries)
-                file_path.write_text(json.dumps(all_data, indent=4))
+                file_path.write_text(json.dumps(all_data, indent=4, ensure_ascii=False), encoding='utf-8')
                 logging.info(f"Successfully updated {file_path} with new entries.")
             else:
                 logging.info(f"No new entries to add. All provided data already exists in {file_path}.")
@@ -58,7 +58,7 @@ class JSONStorage(Storage):
 
             # Search only in values of each data entry
             results = [
-                data for data in all_data
+                data.get('url') for data in all_data
                 if any(keyword.lower() in str(value).lower() for value in data.values())
             ]
 
