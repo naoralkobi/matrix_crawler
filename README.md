@@ -2,6 +2,11 @@
 
 This project implements a versatile and extendable web scraping system, designed to extract data from websites such as government news portals and online stores. It uses **Selenium** for web automation, efficiently fetching, parsing, and storing data such as news articles and product information in a structured JSON format.
 
+## Challenge
+
+In this project, a key challenge was handling dynamic content that is loaded asynchronously via JavaScript, such as infinite scrolling on the whiskey store or articles loading on the news site. To address this, **Selenium** was used to interact with the page as a real user would, allowing for the execution of JavaScript to load additional content. For example, scrolling was automated with `window.scrollTo(0, document.body.scrollHeight);` to trigger more data to load. Additionally, explicit waits ensured the content was fully loaded before scraping, making the extraction of dynamic data seamless.
+
+
 ## Features
 
 - **Dynamic Web Scraping**: Uses Selenium WebDriver to automate the scraping of dynamic content from various websites.
