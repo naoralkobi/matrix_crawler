@@ -27,6 +27,7 @@ class NewsParser(Parser):
         return urls
 
     def _get_page_source(self, url, class_name):
+        logging.info(f"Get html from {url}")
         self.driver.get(url)
         try:
             WebDriverWait(self.driver, 30).until(

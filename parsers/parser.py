@@ -2,7 +2,9 @@ from abc import ABC, abstractmethod
 import logging
 import re
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
+
+logger = logging.getLogger()
 
 
 class Parser(ABC):
@@ -14,4 +16,3 @@ class Parser(ABC):
     def extract_data(html, pattern):
         match = re.search(pattern, html, re.DOTALL | re.IGNORECASE)
         return match.group(1) if match else ""
-

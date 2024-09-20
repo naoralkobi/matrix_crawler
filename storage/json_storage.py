@@ -1,58 +1,70 @@
 import json
-import os
-from storage.storage import Storage
+from pathlib import Path
 import logging
+from storage.storage import Storage
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
+
+logger = logging.getLogger()
 
 
 class JSONStorage(Storage):
-    def get_file_path(self, parser_name: str) -> str:
-        """Generate a file path based on the parser name."""
-        return os.path.join(self.directory, f"{parser_name}_data.json")
+    def get_file_path(self, parser_name: str) -> Path:
+        return Path(self.directory) / f"{parser_name}_data.json"
 
-    def save(self, data: dict, parser_name: str):
-        """Save the data into a specific file based on the parser."""
+    def save(self, new_data: list, parser_name: str):
+        """
+            Save the data into a specific file based on the parser, avoiding duplicate entries by 'url' key.
+        """
         file_path = self.get_file_path(parser_name)
 
         try:
-            # Load existing data if the file exists, otherwise start with an empty list
-            if os.path.exists(file_path):
-                with open(file_path, 'r') as file:
-                    all_data = json.load(file)
+            if file_path.exists():
+                all_data = json.loads(file_path.read_text())
+                logging.info(f"Loaded existing data from {file_path} with {len(all_data)} entries.")
             else:
                 all_data = []
+                logging.info(f"No existing file found. Starting a new data file: {file_path}")
 
-            # Append new data
-            all_data.append(data)
+            existing_urls = {entry['url'] for entry in all_data if 'url' in entry}
+            logging.info(f"Checking for duplicates among {len(existing_urls)} existing entries.")
 
-            # Save updated data back to the file
-            with open(file_path, 'w') as file:
-                json.dump(all_data, file, indent=4)
+            new_entries = [entry for entry in new_data if entry.get('url') not in existing_urls]
+
+            if new_entries:
+                logging.info(f"Adding {len(new_entries)} new entries to {file_path}.")
+                all_data.extend(new_entries)
+                file_path.write_text(json.dumps(all_data, indent=4))
+                logging.info(f"Successfully updated {file_path} with new entries.")
+            else:
+                logging.info(f"No new entries to add. All provided data already exists in {file_path}.")
 
         except (IOError, json.JSONDecodeError) as e:
-            logging.critical(f"Error saving data to {file_path}: {e}")
+            logging.error(f"Error saving data to {file_path}: {e}", exc_info=True)
 
     def search(self, keyword: str, parser_name: str):
-        """Search for a keyword only in the values of the specific parser's JSON file."""
+        """
+            Search for a keyword only in the values of the specific parser's JSON file.
+        """
         file_path = self.get_file_path(parser_name)
 
         try:
-            if not os.path.exists(file_path):
+            if not file_path.exists():
+                logging.warning(f"File {file_path} not found for parser: {parser_name}. No search results.")
                 return []
 
-            with open(file_path, 'r') as file:
-                all_data = json.load(file)
-
-            flattened_data = [item for sublist in all_data for item in sublist]
+            all_data = json.loads(file_path.read_text())
+            logging.info(f"Loaded {len(all_data)} entries from {file_path} for searching.")
 
             # Search only in values of each data entry
             results = [
-                data for data in flattened_data
+                data for data in all_data
                 if any(keyword.lower() in str(value).lower() for value in data.values())
             ]
+
+            logging.info(f"Search for '{keyword}' in {file_path} returned {len(results)} results.")
             return results
 
         except (IOError, json.JSONDecodeError) as e:
-            logging.critical(f"Error reading from {file_path}: {e}")
+            logging.error(f"Error reading from {file_path}: {e}", exc_info=True)
             return []

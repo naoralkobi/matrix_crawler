@@ -1,5 +1,4 @@
 from parsers.parser_factory import ParserFactory
-from scraper.scraper import Scraper
 from storage.storage import Storage
 
 
